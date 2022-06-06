@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Upload file to s3 & db</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" integrity="sha512-894YE6QWD5I59HgZOGReFYm4dnWc1Qt5NtvYSaNcOP+u1T9qYdvdihz0PPSiiqn/+/3e7Jo4EaG7TubfWGUrMQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+</head>
+<body>
+
+    <div class="container mt-5">
+
+        <div class="card">
+            <div class="card-header">
+                <h2>Upload file to fileserver</h2>
+            </div>
+            <div class="card-body">
+                <div class="input-group mb-3">
+                    <form action="http://localhost:8080/file" enctype="multipart/form-data" method="post">
+                        <input type="file" name="imageFile"/>
+                        <input type="hidden" id="authToken" name="auth"/>
+                        <input type="submit" value="Upload file"/>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Lists of images -->
+        <table class="table mt-5">
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>Path</th>
+                <th>Filename</th>
+                <th>Size</th>
+                <th>MIMETYPE</th>
+                <th>Extension</th>
+                <th>Created at</th>
+            </tr>
+            </thead>
+            <tbody class="tableData">
+            </tbody>
+        </table>
+        
+    </div>
+<script>
+    $( document ).ready(function() {
+
+        // Get token
+        $.ajax({
+            type: "get",
+            url: 'http://localhost:8080/token',
+            contentType: "application/json; charset=utf-8",
+            success: function(response){
+                $("#authToken").val(response)
+                
+                // Get files
+                $.ajax({
+                    type: "get",
+                    url: 'http://localhost:8080/file?auth='+response,
+                    contentType: "application/json; charset=utf-8",
+                    success: function(response){
+                        $.each(response, function(i,data) {
+                            $(".tableData").append(`
+                                <tr>
+                                    <td>` + data.id + `</td>
+                                    <td>` + data.path + `</td>
+                                    <td>` + data.filename + `</td>
+                                    <td>` + data.size + `</td>
+                                    <td>` + data.mimetype + `</td>
+                                    <td>` + data.extension + `</td>
+                                    <td>` + data.created_at + `</td>
+                                </tr>
+                            `);
+                        });
+                    }
+                });
+
+            }
+        });
+    });
+</script>
+</body>
+</html>
